@@ -52,7 +52,7 @@ export class AlbumService {
 
   validateAlbumDto(albumDto: CreateAlbumDto | UpdateAlbumDto): boolean {
     const {name, year, artistId } = albumDto;
-    const isExist = this.artistService.searchArtist(artistId);
+    const isExist = artistId === null || this.artistService.searchArtist(artistId);
     return name && year && typeof name === 'string' && typeof year === 'number' && !!isExist;
   }
 

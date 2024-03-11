@@ -32,7 +32,7 @@ export class TrackService {
     return track;
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto):void {
+  update(id: string, updateTrackDto: UpdateTrackDto):Track {
     if (!validate(id)) throw new UUIDException();
     const track = this.searchTrack(id);
     if (!track) throw new NotFoundException();
@@ -40,6 +40,7 @@ export class TrackService {
     const newTrack = {...track, ...updateTrackDto};
     const index: number = TrackService.tracks.indexOf(track);
     TrackService.tracks[index] = newTrack;
+    return newTrack;
   }
 
   remove(id: string): void {

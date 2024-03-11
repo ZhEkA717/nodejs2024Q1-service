@@ -33,7 +33,7 @@ export class AlbumService {
     return album;
   }
 
-  update(id: string, updateAlbumDto: UpdateAlbumDto): void {
+  update(id: string, updateAlbumDto: UpdateAlbumDto): Album {
     if (!validate(id)) throw new UUIDException();
     const album = this.searchAlbum(id);
     if (!album) throw new NotFoundException();
@@ -41,6 +41,7 @@ export class AlbumService {
     const newAlbum = {...album, ...updateAlbumDto};
     const index: number = AlbumService.albums.indexOf(album);
     AlbumService.albums[index] = newAlbum;
+    return newAlbum;
   }
 
   remove(id: string): void {

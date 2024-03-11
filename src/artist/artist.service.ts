@@ -32,7 +32,7 @@ export class ArtistService {
     return artist;
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto): void {
+  update(id: string, updateArtistDto: UpdateArtistDto): Artist {
     if (!validate(id)) throw new UUIDException();
     if (!this.validateArtistDto(updateArtistDto)) throw new BadRequestException();
     const artist = this.searchArtist(id);
@@ -40,6 +40,7 @@ export class ArtistService {
     const newArtist = { ...artist, ...updateArtistDto };
     const index: number = ArtistService.artists.indexOf(artist);
     ArtistService.artists[index] = newArtist;
+    return newArtist;
   }
 
   remove(id: string): void {

@@ -35,7 +35,7 @@ export class UserService {
     return { id, login, version, createdAt, updatedAt };
   }
 
-  update(id: string, updateUserDto: UpdateUserDto):void {
+  update(id: string, updateUserDto: UpdateUserDto):Omit<User, 'password'> {
     if (!validate(id)) throw new UUIDException();
     if (!this.validateUpdateUserDto(updateUserDto)) throw new BadRequestException();
     const {oldPassword, newPassword } = updateUserDto;
@@ -46,10 +46,13 @@ export class UserService {
     const newUser = {
       ...user,
       password: newPassword,
-      version: user.version + 1
+      version: user.version + 1,
+      updatedAt: new Date().getTime()
     }
+    const { id: idUser, login, version, createdAt, updatedAt } = newUser;
     const index: number = this.users.indexOf(user);
     this.users[index] = newUser;
+    return { id: idUser, login, version, createdAt, updatedAt };
   }
 
   remove(id: string): void {

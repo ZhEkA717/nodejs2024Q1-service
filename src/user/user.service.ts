@@ -12,11 +12,13 @@ export class UserService {
   create(createUserDto: CreateUserDto):User {
     if (!this.validateCreateUserDto(createUserDto)) throw new BadRequestException();
     const id = v4();
+    
     const version = 1;
     const createdAt = new Date().getTime();
     const updatedAt = createdAt;
     const user = { id, ...createUserDto, version, createdAt, updatedAt };
     this.users.push(user);
+    delete user.password;
     return user;
   }
 

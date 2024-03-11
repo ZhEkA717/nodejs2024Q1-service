@@ -9,28 +9,30 @@ import { UUIDException } from './exceptions/uuid.exception';
 export class UserService {
   private users: User[] = [];
 
-  create(createUserDto: CreateUserDto):User {
+  create(createUserDto: CreateUserDto):Omit<User, 'password'> {
     if (!this.validateCreateUserDto(createUserDto)) throw new BadRequestException();
     const id = v4();
-    
+    const {login, password} = createUserDto;
     const version = 1;
     const createdAt = new Date().getTime();
     const updatedAt = createdAt;
-    const user = { id, ...createUserDto, version, createdAt, updatedAt };
+    const user = { id, login, password, version, createdAt, updatedAt };
     this.users.push(user);
-    delete user.password;
-    return user;
+    return { id, login, version, createdAt, updatedAt };
   }
 
   findAll() {
-    return this.users;
+    return this.users.map(({id, login, version, createdAt, updatedAt}) => ({
+      id, login, version, createdAt, updatedAt
+    }));
   }
 
-  findOne(id: string): User {
-    if (!validate(id)) throw new UUIDException();
-    const user = this.searchUser(id)
+  findOne(userId: string): Omit<User, 'password'> {
+    if (!validate(userId)) throw new UUIDException();
+    const user = this.searchUser(userId)
     if (!user) throw new NotFoundException();
-    return user;
+    const { id, login, version, createdAt, updatedAt } = user;
+    return { id, login, version, createdAt, updatedAt };
   }
 
   update(id: string, updateUserDto: UpdateUserDto):void {

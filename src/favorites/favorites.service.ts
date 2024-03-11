@@ -9,13 +9,13 @@ import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class FavoritesService {
-    private favs: Favorite = <Favorite>{
+    static favs: Favorite = <Favorite>{
         artists: [],
         albums: [],
         tracks: []
     }
     findAll():FavoriteResponce {
-        const {artists, albums, tracks} = this.favs;
+        const {artists, albums, tracks} = FavoritesService.favs;
         return {
             artists: this.idsToEntity(artists, ArtistService.artists) as Artist[],
             albums: this.idsToEntity(albums, AlbumService.albums) as Album[],
@@ -24,32 +24,32 @@ export class FavoritesService {
     }
 
     addAlbum(id: string) {
-        const { albums } = this.favs;
+        const { albums } = FavoritesService.favs;
         this.addEntity(albums, AlbumService.albums, id);
     }
 
     deleteAlbum(id: string) {
-        const {albums} = this.favs;
+        const {albums} = FavoritesService.favs;
         this.deleteEntity(albums, id);
     }
 
     addArtist(id: string) {
-        const { artists } = this.favs;
+        const { artists } = FavoritesService.favs;
         this.addEntity(artists, ArtistService.artists, id);
     }
 
     deleteArtist(id: string) {
-        const {artists} = this.favs;
+        const {artists} = FavoritesService.favs;
         this.deleteEntity(artists, id);
     }
 
     addTrack(id: string) {
-        const { tracks } = this.favs;
+        const { tracks } = FavoritesService.favs;
         this.addEntity(tracks, TrackService.tracks, id);
     }
 
     deleteTrack(id: string) {
-        const {tracks} = this.favs;
+        const {tracks} = FavoritesService.favs;
         this.deleteEntity(tracks, id);
     }
 

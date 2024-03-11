@@ -6,6 +6,8 @@ import { ArtistService } from 'src/artist/artist.service';
 import { AlbumService } from 'src/album/album.service';
 import { v4, validate } from 'uuid';
 import { UUIDException } from 'src/user/exceptions/uuid.exception';
+import { updateFavorite } from 'src/utils/updateFavorite';
+import { FavoritesService } from 'src/favorites/favorites.service';
 
 @Injectable()
 export class TrackService {
@@ -46,6 +48,7 @@ export class TrackService {
     if (!track) throw new NotFoundException();
     const index: number = TrackService.tracks.indexOf(track);
     TrackService.tracks.splice(index, 1);
+    updateFavorite(FavoritesService.favs.tracks, id);
   }
 
   searchTrack(id: string): Track | undefined {

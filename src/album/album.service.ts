@@ -5,13 +5,12 @@ import { Album } from './entities/album.entity';
 import { v4, validate } from 'uuid';
 import { UUIDException } from 'src/user/exceptions/uuid.exception';
 import { ArtistService } from 'src/artist/artist.service';
+import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class AlbumService {
 
   static albums: Album[] = [];
-
-  constructor(private artistService: ArtistService) {}
 
   create(createAlbumDto: CreateAlbumDto): Album {
     if(!this.validateAlbumDto(createAlbumDto)) throw new BadRequestException();
@@ -48,15 +47,26 @@ export class AlbumService {
     if (!album) throw new NotFoundException();
     const index: number = AlbumService.albums.indexOf(album);
     AlbumService.albums.splice(index, 1);
+    this.updateTracksAfterDeleteAlbum(id);
+  }
+
+  updateTracksAfterDeleteAlbum(id: string) {
+    TrackService.tracks.forEach(item => {
+      if (item.albumId === id) item.albumId = null;
+    })
   }
 
   validateAlbumDto(albumDto: CreateAlbumDto | UpdateAlbumDto): boolean {
     const {name, year, artistId } = albumDto;
-    const isExist = artistId === null || this.artistService.searchArtist(artistId);
+    const isExist = artistId === null || ArtistService.artists.find(artist => artist.id === artistId);
     return name && year && typeof name === 'string' && typeof year === 'number' && !!isExist;
   }
 
   searchAlbum(id: string):Album | undefined {
     return AlbumService.albums.find(album => album.id === id);
+  }
+
+  get getAlbumsId() {
+    return AlbumService.albums.map(item => item.id);
   }
 }

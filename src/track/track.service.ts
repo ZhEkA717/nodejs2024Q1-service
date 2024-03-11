@@ -11,11 +11,6 @@ import { UUIDException } from 'src/user/exceptions/uuid.exception';
 export class TrackService {
   static tracks: Track[] = [];
 
-  constructor(
-    private artistService: ArtistService,
-    private albumService: AlbumService
-  ) { }
-
   create(createTrackDto: CreateTrackDto): Track {
     if (!this.validateDto(createTrackDto)) throw new BadRequestException();
     const id = v4();
@@ -59,8 +54,12 @@ export class TrackService {
 
   validateDto(dto: CreateTrackDto | UpdateTrackDto) {
     const { name, duration, artistId, albumId } = dto;
-    const artistIsExist = artistId === null || this.artistService.searchArtist(artistId);
-    const albumIsExist = albumId === null || this.albumService.searchAlbum(albumId);
+    const artistIsExist = artistId === null || ArtistService.artists.find(artist => artist.id === artistId);
+    const albumIsExist = albumId === null || AlbumService.albums.find(album => album.id === albumId);
     return name && duration && !!albumIsExist && !!artistIsExist && typeof name === 'string' && typeof duration === 'number';
+  }
+
+  get getTracksId() {
+    return TrackService.tracks.map(item => item.id);
   }
 }

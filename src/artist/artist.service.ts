@@ -7,19 +7,18 @@ import { UUIDException } from 'src/user/exceptions/uuid.exception';
 
 @Injectable()
 export class ArtistService {
-  private artists: Artist[] = [];
+  static artists: Artist[] = [];
 
   create(createArtistDto: CreateArtistDto): Artist {
     const id = v4();
-    console.log(this.validateArtistDto(createArtistDto));
     if (!this.validateArtistDto(createArtistDto)) throw new BadRequestException();
     const artist = {id, ...createArtistDto };
-    this.artists.push(artist)
+    ArtistService.artists.push(artist)
     return artist;
   }
 
   findAll(): Artist[] {
-    return this.artists;
+    return ArtistService.artists;
   }
 
   findOne(id: string): Artist {
@@ -31,25 +30,24 @@ export class ArtistService {
 
   update(id: string, updateArtistDto: UpdateArtistDto): void {
     if (!validate(id)) throw new UUIDException();
-    console.log(this.validateArtistDto(updateArtistDto));
     if (!this.validateArtistDto(updateArtistDto)) throw new BadRequestException();
     const artist = this.searchArtist(id);
     if (!artist) throw new NotFoundException();
     const newArtist = { ...artist, ...updateArtistDto };
-    const index: number = this.artists.indexOf(artist);
-    this.artists[index] = newArtist;
+    const index: number = ArtistService.artists.indexOf(artist);
+    ArtistService.artists[index] = newArtist;
   }
 
   remove(id: string): void {
     if (!validate(id)) throw new UUIDException();
     const artist = this.searchArtist(id);
     if (!artist) throw new NotFoundException();
-    const index: number = this.artists.indexOf(artist);
-    this.artists.splice(index, 1);
+    const index: number = ArtistService.artists.indexOf(artist);
+    ArtistService.artists.splice(index, 1);
   }
 
   searchArtist(id: string): Artist | undefined {
-    return this.artists.find(artist => artist.id === id);
+    return ArtistService.artists.find(artist => artist.id === id);
   }
 
   validateArtistDto(artistDto: CreateArtistDto | UpdateArtistDto): boolean {

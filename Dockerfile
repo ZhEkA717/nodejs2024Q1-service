@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:16.2-alpine
 
 EXPOSE ${PORT}
 
@@ -10,5 +10,5 @@ RUN npm install
 
 COPY ./ ./
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start:dev"]
 

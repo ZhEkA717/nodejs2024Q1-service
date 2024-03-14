@@ -1,9 +1,25 @@
 version: '3.0'
 
 services:
+
   my-api:
     build: .
     ports:
       - ${PORT}:${PORT}
+    depends_on:
+      - postgres
     environment:
       - PORT=${PORT}
+    restart:  on-failure
+
+  postgres:
+    build: ./database/
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ./database/pgdata:/var/lib/postgresql/data
+    restart:  on-failure

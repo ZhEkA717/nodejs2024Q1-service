@@ -1,5 +1,14 @@
 version: '3.0'
 
+networks:
+  weather-network:
+    driver: bridge
+    external: true
+
+volumes:
+  weather-data:
+    name: weather-data
+
 services:
 
   my-api:
@@ -10,12 +19,16 @@ services:
       - postgres
     environment:
       - PORT=${PORT}
+    networks:
+      - weather-network
     restart:  on-failure
 
   postgres:
     build: ./database/
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    networks:
+      - weather-network
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -23,3 +36,13 @@ services:
     volumes:
       - ./database/pgdata:/var/lib/postgresql/data
     restart:  on-failure
+
+  web:
+    image: weather-app
+    ports:
+      - '9200:9200'
+    networks:
+      - weather-network
+    depends_on:
+      - my-api
+      - postgres

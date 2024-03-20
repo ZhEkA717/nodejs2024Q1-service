@@ -1,17 +1,17 @@
 version: '3.0'
 
 services:
-  # node:
-  #   build: .
-  #   ports:
-  #     - ${PORT}:${PORT}
-  #   depends_on:
-  #     - postgres
-  #   environment:
-  #     - PORT=${PORT}
-  #   networks:
-  #     - homenet
-  #   restart: on-failure
+  node:
+    build: .
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - postgres
+    environment:
+      - PORT=${PORT}
+    networks:
+      - homenet
+    restart: on-failure
   postgres:
     build: ./database
     ports:
@@ -27,7 +27,6 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     restart: on-failure
-    command: postgres -c logging_collector=on
 
 networks:
   homenet:

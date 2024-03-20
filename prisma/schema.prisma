@@ -21,3 +21,37 @@ model User {
   createdAt BigInt
   updatedAt BigInt
 }
+
+model Album {
+  id       String  @id
+  name     String
+  year     Int
+  artist   Artist? @relation(fields: [artistId], references: [id])
+  artistId String?
+  tracks   Track[]
+}
+
+model Artist {
+  id     String  @id
+  name   String
+  grammy Boolean
+  albums Album[]
+  tracks Track[]
+}
+
+model Track {
+  id       String  @id
+  name     String
+  artist   Artist? @relation(fields: [artistId], references: [id])
+  artistId String?
+  album    Album?  @relation(fields: [albumId], references: [id])
+  albumId  String?
+  duration Int
+}
+
+model Favorites {
+  id      Int      @id @default(1)
+  artists String[] @default([])
+  albums  String[] @default([])
+  tracks  String[] @default([])
+}

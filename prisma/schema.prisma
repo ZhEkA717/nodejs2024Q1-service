@@ -18,8 +18,8 @@ model User {
   login     String
   password  String
   version   Int    @default(1)
-  createdAt BigInt
-  updatedAt BigInt
+  createdAt Int
+  updatedAt Int
 }
 
 model Album {

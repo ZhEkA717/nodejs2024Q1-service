@@ -1,19 +1,28 @@
 version: '3.0'
 
 services:
+
   node:
-    build: .
+    build:
+      context: .
+      dockerfile: ./docker/node/dockerfile
     ports:
       - ${PORT}:${PORT}
     depends_on:
       - postgres
     environment:
       - PORT=${PORT}
+      - POSTGRES_DB_HOST=postgres
+    volumes:
+      - ./src:/usr/app/src/src
     networks:
       - homenet
-    restart: on-failure
+    restart: always
+  
   postgres:
-    build: ./database
+    build: 
+      context: .
+      dockerfile: ./docker/postgres/dockerfile
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
     environment:
@@ -26,17 +35,11 @@ services:
           - postgresdb
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    restart: on-failure
+    restart: always
 
 networks:
   homenet:
-    attachable: true
     driver: 'bridge'
-    ipam:
-      config:
-        - subnet: 10.10.1.0/24
-          ip_range: 10.10.1.0/24
-          gateway: 10.10.1.1
 
 volumes:
   postgres-data:

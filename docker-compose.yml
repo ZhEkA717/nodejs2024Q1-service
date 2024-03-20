@@ -1,48 +1,43 @@
 version: '3.0'
 
-networks:
-  weather-network:
-    driver: bridge
-    external: true
-
-volumes:
-  weather-data:
-    name: weather-data
-
 services:
-
-  my-api:
-    build: .
-    ports:
-      - ${PORT}:${PORT}
-    depends_on:
-      - postgres
-    environment:
-      - PORT=${PORT}
-    networks:
-      - weather-network
-    restart:  on-failure
-
+  # node:
+  #   build: .
+  #   ports:
+  #     - ${PORT}:${PORT}
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     - PORT=${PORT}
+  #   networks:
+  #     - homenet
+  #   restart: on-failure
   postgres:
-    build: ./database/
+    build: ./database
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
-    networks:
-      - weather-network
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
-    volumes:
-      - ./database/pgdata:/var/lib/postgresql/data
-    restart:  on-failure
-
-  web:
-    image: weather-app
-    ports:
-      - '9200:9200'
     networks:
-      - weather-network
-    depends_on:
-      - my-api
-      - postgres
+      homenet:
+        aliases:
+          - postgresdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: on-failure
+    command: postgres -c logging_collector=on
+
+networks:
+  homenet:
+    attachable: true
+    driver: 'bridge'
+    ipam:
+      config:
+        - subnet: 10.10.1.0/24
+          ip_range: 10.10.1.0/24
+          gateway: 10.10.1.1
+
+volumes:
+  postgres-data:

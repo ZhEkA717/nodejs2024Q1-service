@@ -4,73 +4,54 @@ import { UpdateAlbumDto } from './dto/update-album.dto';
 import { Album } from './entities/album.entity';
 import { v4, validate } from 'uuid';
 import { UUIDException } from 'src/user/exceptions/uuid.exception';
-import { ArtistService } from 'src/artist/artist.service';
-import { TrackService } from 'src/track/track.service';
-import { FavoritesService } from 'src/favorites/favorites.service';
-import { updateFavorite } from 'src/utils/updateFavorite';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AlbumService {
+  private db = this.prisma.album;
 
-  static albums: Album[] = [];
+  constructor (private readonly prisma: PrismaService) {}
 
-  create(createAlbumDto: CreateAlbumDto): Album {
-    if(!this.validateAlbumDto(createAlbumDto)) throw new BadRequestException();
+  async create(createAlbumDto: CreateAlbumDto): Promise<Album> {
+    if(!(await this.validateAlbumDto(createAlbumDto))) throw new BadRequestException();
     const id = v4();
-    const album = {id, ...createAlbumDto};
-    AlbumService.albums.push(album);
-    return album;
+    const data = {id, ...createAlbumDto};
+    await this.db.create({data})
+    return data;
   }
 
-  findAll() {
-    return AlbumService.albums;
+  async findAll(): Promise<Album[]> {
+    return await this.db.findMany();
   }
 
-  findOne(id: string): Album {
+  async findOne(id: string): Promise<Album> {
     if (!validate(id)) throw new UUIDException();
-    const album = this.searchAlbum(id);
+    const album = await this.db.findUnique({where: {id}});
     if (!album) throw new NotFoundException();
     return album;
   }
 
-  update(id: string, updateAlbumDto: UpdateAlbumDto): Album {
+  async update(id: string, updateAlbumDto: UpdateAlbumDto): Promise<Album> {
     if (!validate(id)) throw new UUIDException();
-    const album = this.searchAlbum(id);
+    const album = await this.db.findUnique({where: {id}});
     if (!album) throw new NotFoundException();
-    if (!this.validateAlbumDto(updateAlbumDto)) throw new BadRequestException();
-    const newAlbum = {...album, ...updateAlbumDto};
-    const index: number = AlbumService.albums.indexOf(album);
-    AlbumService.albums[index] = newAlbum;
-    return newAlbum;
+    if (!(await this.validateAlbumDto(updateAlbumDto))) throw new BadRequestException();
+    return await this.db.update({where: {id}, data: updateAlbumDto});
   }
 
-  remove(id: string): void {
+  async remove(id: string): Promise<void> {
     if (!validate(id)) throw new UUIDException();
-    const album = this.searchAlbum(id);
+    const album = await this.db.findUnique({where:{id}});
     if (!album) throw new NotFoundException();
-    const index: number = AlbumService.albums.indexOf(album);
-    AlbumService.albums.splice(index, 1);
-    updateFavorite(FavoritesService.favs.albums, id);
-    this.updateTracksAfterDeleteAlbum(id);
-  }
-
-  updateTracksAfterDeleteAlbum(id: string) {
-    TrackService.tracks.forEach(item => {
-      if (item.albumId === id) item.albumId = null;
+    await this.db.delete({
+      where: {id},
+      include: {tracks: true}
     })
   }
 
-  validateAlbumDto(albumDto: CreateAlbumDto | UpdateAlbumDto): boolean {
+  async validateAlbumDto(albumDto: CreateAlbumDto | UpdateAlbumDto): Promise<boolean> {
     const {name, year, artistId } = albumDto;
-    const isExist = artistId === null || ArtistService.artists.find(artist => artist.id === artistId);
+    const isExist = artistId === null || await this.prisma.artist.findUnique({where: {id: String(artistId)}});
     return name && year && typeof name === 'string' && typeof year === 'number' && !!isExist;
-  }
-
-  searchAlbum(id: string):Album | undefined {
-    return AlbumService.albums.find(album => album.id === id);
-  }
-
-  get getAlbumsId() {
-    return AlbumService.albums.map(item => item.id);
   }
 }

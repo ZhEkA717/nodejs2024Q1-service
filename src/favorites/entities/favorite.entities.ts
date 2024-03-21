@@ -13,3 +13,20 @@ export interface FavoriteResponce {
     albums: Album[];
     tracks: Track[];
 }
+
+export const EntityType = {
+    album: {
+      prismaEntity: 'album',
+      field: 'albums',
+    },
+    artist: {
+      prismaEntity: 'artist',
+      field: 'artists',
+    },
+    track: {
+      prismaEntity: 'track',
+      field: 'tracks',
+    },
+  };
+
+  export type FavoriteEntityType = (typeof EntityType)[keyof typeof EntityType];

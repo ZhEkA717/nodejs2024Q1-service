@@ -15,7 +15,6 @@ export class FavoritesController {
   @Post('album/:id')
   addAlbum(@UUIDParam('id') id: string) {
     return this.favoritesService.addEntity(id, EntityType.album);
-
   }
 
   @Delete('album/:id')

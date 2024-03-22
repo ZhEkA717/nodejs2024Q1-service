@@ -12,14 +12,14 @@ import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: './.env'
+      envFilePath: './.env',
     }),
     UserModule,
     ArtistModule,
     AlbumModule,
     TrackModule,
     FavoritesModule,
-    PrismaModule
+    PrismaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

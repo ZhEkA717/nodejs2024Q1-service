@@ -56,6 +56,49 @@ docker-compose up --build
   ```yaml
   image: grushevskiyyevgeniy/node:v1.0
   ```
+
+  ```yaml
+  version: '3.0'
+
+  services:
+
+  node:
+    image: grushevskiyyevgeniy/node:v1.0 
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - postgres
+    environment:
+      - PORT=${PORT}
+      - POSTGRES_DB_HOST=postgres
+    networks:
+      - homenet
+    restart: always
+  
+  postgres:
+    image: grushevskiyyevgeniy/postgres:v1.0
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    networks:
+      homenet:
+        aliases:
+          - postgresdb
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    restart: always
+
+  networks:
+  homenet:
+    driver: 'bridge'
+
+  volumes:
+  postgres-data:
+
+  ```
   
 ## Testing
 

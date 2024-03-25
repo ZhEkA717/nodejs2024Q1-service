@@ -33,11 +33,16 @@ cp .env.example .env
 docker-compose up --build
 ```
 **For the first time:** 
+  - in another terminal
+  - <CONTAINER_ID> of node app 
 ```bash
 docker ps -a
 ```
 ```bash
-docker exec -it <CONTAINER_ID> npm run prisma:migrate && npx prisma db seed
+docker exec -it <CONTAINER_ID> npm run prisma:migrate
+```
+```bash
+docker exec -it <CONTAINER_ID> npx prisma db seed
 ```
 ## Use Docker Hub
 
@@ -46,9 +51,9 @@ docker exec -it <CONTAINER_ID> npm run prisma:migrate && npx prisma db seed
   ```bash
   docker pull grushevskiyyevgeniy/node:v1.0
   ```
-  Change docker-compose.yaml in the root
+  Change docker-compose.yml in the root
 
-  ```yaml
+  ```yml
   image: grushevskiyyevgeniy/node:v1.0
   ```
 
@@ -60,11 +65,12 @@ docker exec -it <CONTAINER_ID> npm run prisma:migrate && npx prisma db seed
 
   Change docker-compose.yaml in the root
 
-  ```yaml
+  ```yml
   image: grushevskiyyevgeniy/node:v1.0
   ```
-
-  ```yaml
+  or create new docker-compose.yml
+  
+  ```yml
   version: '3.0'
 
   services:
@@ -106,15 +112,33 @@ docker exec -it <CONTAINER_ID> npm run prisma:migrate && npx prisma db seed
   postgres-data:
 
   ```
+  create new .env file
+  
+  ```env
+    PORT=4000
+  
+    POSTGRES_PORT=5432
+    POSTGRES_USER=postgres  
+    POSTGRES_PASSWORD=postgres
+    POSTGRES_DB=postgres
+    POSTGRES_DB_HOST=127.0.0.1
+
+    DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_USER}@${POSTGRES_DB_HOST}:5432/test?schema=public
+  ```
 ```bash
 docker-compose up --build
 ```
 ### For the first time:
+  - in another terminal
+  - <CONTAINER_ID> of node app  
 ```bash
 docker ps -a
 ```
 ```bash
-docker exec -it <CONTAINER_ID> npm run prisma:migrate && npx prisma db seed
+docker exec -it <CONTAINER_ID> npm run prisma:migrate
+```
+```bash
+docker exec -it <CONTAINER_ID> npx prisma db seed
 ```
 ## Testing
 

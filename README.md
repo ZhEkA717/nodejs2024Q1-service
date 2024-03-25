@@ -73,7 +73,7 @@ docker exec -it <CONTAINER_ID> npx prisma db seed
   ```yml
   version: '3.0'
 
-    services:
+  services:
 
     node:
       image: grushevskiyyevgeniy/node:v1.0 

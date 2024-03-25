@@ -13,41 +13,53 @@
 git clone https://github.com/ZhEkA717/nodejs2024Q1-service.git
 ```
 
-## Change branch
+```bash
+cd nodejs2024Q1-service
+```
 
 ```bash
 git checkout feat/add-docker
 ```
 
-## Installing NPM modules
-
 ```bash
 npm install
 ```
-
-## Environment
-
-Create .env and copy data from .env.example
 
 ```bash
 cp .env.example .env
 ```
 
-## Run docker compose
-
-You must have Docker Desktop installed and running before running this command
-
-[Get Docker](https://docs.docker.com/get-docker/)
-
 ```bash
-docker-compose up
+docker-compose up --build
 ```
+## Use Docker Hub
 
+- **For node image**
+
+  ```bash
+  docker pull grushevskiyyevgeniy/node:v1.0
+  ```
+  Change docker-compose.yaml in the root
+
+  ```yaml
+  image: grushevskiyyevgeniy/node:v1.0
+  ```
+
+- **For postrges image**
+
+  ```bash
+  docker pull grushevskiyyevgeniy/postgres:v1.0
+  ```
+
+  Change docker-compose.yaml in the root
+
+  ```yaml
+  image: grushevskiyyevgeniy/node:v1.0
+  ```
+  
 ## Testing
 
 After application running open new terminal and enter:
-
-To run all tests without authorization
 
 ```bash
 npm run test

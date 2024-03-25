@@ -115,15 +115,15 @@ docker exec -it <CONTAINER_ID> npx prisma db seed
   create new .env file
   
   ```env
-    PORT=4000
+  PORT=4000
   
-    POSTGRES_PORT=5432
-    POSTGRES_USER=postgres  
-    POSTGRES_PASSWORD=postgres
-    POSTGRES_DB=postgres
-    POSTGRES_DB_HOST=127.0.0.1
+  POSTGRES_PORT=5432
+  POSTGRES_USER=postgres  
+  POSTGRES_PASSWORD=postgres
+  POSTGRES_DB=postgres
+  POSTGRES_DB_HOST=127.0.0.1
 
-    DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_USER}@${POSTGRES_DB_HOST}:5432/test?schema=public
+  DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_USER}@${POSTGRES_DB_HOST}:5432/test?schema=public
   ```
 ```bash
 docker-compose up --build

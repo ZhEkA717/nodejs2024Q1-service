@@ -32,6 +32,13 @@ cp .env.example .env
 ```bash
 docker-compose up --build
 ```
+**For the first time:** 
+```bash
+docker ps -a
+```
+```bash
+docker exec -it <CONTAINER_ID> npm run prisma:migrate && npx prisma db seed
+```
 ## Use Docker Hub
 
 - **For node image**
@@ -99,7 +106,16 @@ docker-compose up --build
   postgres-data:
 
   ```
-  
+```bash
+docker-compose up --build
+```
+### For the first time:
+```bash
+docker ps -a
+```
+```bash
+docker exec -it <CONTAINER_ID> npm run prisma:migrate && npx prisma db seed
+```
 ## Testing
 
 After application running open new terminal and enter:

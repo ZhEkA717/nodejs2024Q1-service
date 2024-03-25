@@ -3,6 +3,7 @@
 /node_modules
 /database/pgdata
 pg_data
+.env
 
 # Logs
 logs

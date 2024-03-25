@@ -1,4 +1,4 @@
-# Home Library Service
+# [ Part 2] Containerization, Docker and Database & ORM
 
 ## Prerequisites
 
@@ -7,25 +7,41 @@
 
 ## Downloading
 
+**HTTPS**
+
+```bash
+git clone https://github.com/ZhEkA717/nodejs2024Q1-service.git
 ```
-git clone [{repository URL}](https://github.com/ZhEkA717/nodejs2024Q1-service.git)
+
+## Change branch
+
+```bash
+git checkout feat/add-docker
 ```
 
 ## Installing NPM modules
 
-```
+```bash
 npm install
 ```
 
-## Running application
+## Environment
 
-```
-npm start
+Create .env and copy data from .env.example
+
+```bash
+cp .env.example .env
 ```
 
-After starting the app on port (4000 as default) you can open
-in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
-For more information about OpenAPI/Swagger please visit https://swagger.io/.
+## Run docker compose
+
+You must have Docker Desktop installed and running before running this command
+
+[Get Docker](https://docs.docker.com/get-docker/)
+
+```bash
+docker-compose up
+```
 
 ## Testing
 
@@ -33,40 +49,6 @@ After application running open new terminal and enter:
 
 To run all tests without authorization
 
-```
+```bash
 npm run test
 ```
-
-To run only one of all test suites
-
-```
-npm run test -- <path to suite>
-```
-
-To run all test with authorization
-
-```
-npm run test:auth
-```
-
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
-```
-
-### Auto-fix and format
-
-```
-npm run lint
-```
-
-```
-npm run format
-```
-
-### Debugging in VSCode
-
-Press <kbd>F5</kbd> to debug.
-
-For more information, visit: https://code.visualstudio.com/docs/editor/debugging

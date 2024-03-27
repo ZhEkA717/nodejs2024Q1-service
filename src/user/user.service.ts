@@ -7,8 +7,7 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { v4, validate } from 'uuid';
-import { UUIDException } from './exceptions/uuid.exception';
+import { v4 } from 'uuid';
 import { User as UserModel } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -45,7 +44,6 @@ export class UserService {
   }
 
   async findOne(userId: string): Promise<Omit<User, 'password'>> {
-    if (!validate(userId)) throw new UUIDException();
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -57,7 +55,6 @@ export class UserService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<Omit<User, 'password'>> {
-    if (!validate(id)) throw new UUIDException();
     if (!this.validateUpdateUserDto(updateUserDto))
       throw new BadRequestException();
     const { oldPassword, newPassword } = updateUserDto;
@@ -80,7 +77,6 @@ export class UserService {
   }
 
   async remove(id: string): Promise<void> {
-    if (!validate(id)) throw new UUIDException();
     const user = await this.prisma.user.findUnique({
       where: { id },
     });

@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   HttpCode,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -27,18 +28,18 @@ export class UserController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.userService.findOne(id);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.userService.remove(id);
   }
 }

@@ -140,6 +140,11 @@ docker exec -it <CONTAINER_ID> npm run prisma:migrate
 ```bash
 docker exec -it <CONTAINER_ID> npx prisma db seed
 ```
+## Run vulnerabilities scanning
+```bash
+npm run docker:scout:node
+npm run docker:scout:postgres
+```
 ## Testing
 
 After application running open new terminal and enter:

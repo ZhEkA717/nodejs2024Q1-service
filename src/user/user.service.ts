@@ -34,7 +34,8 @@ export class UserService {
     const version = 1;
     const createdAt = Date.now();
     const updatedAt = createdAt;
-    const user = { id, login, password: this.hashPassword(password), version, createdAt, updatedAt };
+    const passwordHashed = await this.hashPassword(password);
+    const user = { id, login, password: passwordHashed, version, createdAt, updatedAt };
     await this.prisma.user.create({ data: user });
     return this.convertResponse(user);
   }
@@ -88,7 +89,8 @@ export class UserService {
   }
 
   private hashPassword(password: string) {
-    return hashSync(password, genSaltSync(10));
+    const salt = +process.env.CRYPT_SALT || 10;
+    return hash(password, genSaltSync(salt));
   }
 
   validateCreateUserDto(createUserDto: CreateUserDto): boolean {

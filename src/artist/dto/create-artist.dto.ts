@@ -1,4 +1,4 @@
 export class CreateArtistDto {
-    name: string;
-    grammy: boolean;
+  name: string;
+  grammy: boolean;
 }

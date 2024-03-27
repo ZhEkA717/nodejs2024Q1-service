@@ -1,11 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import 'dotenv/config';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const PORT = process.env.PORT || 3000;
-  await app.listen(PORT);
-  console.log(`Server started on port: ${PORT}`);
+  const config = await app.get(ConfigService);
+  const PORT = config.get('PORT') || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server started on port: ${PORT}`);
+  });
 }
 bootstrap();

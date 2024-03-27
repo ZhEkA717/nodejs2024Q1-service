@@ -10,6 +10,7 @@ import { User } from './entities/user.entity';
 import { v4 } from 'uuid';
 import { User as UserModel } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { compare, genSaltSync, hash, hashSync } from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -33,7 +34,7 @@ export class UserService {
     const version = 1;
     const createdAt = Date.now();
     const updatedAt = createdAt;
-    const user = { id, login, password, version, createdAt, updatedAt };
+    const user = { id, login, password: this.hashPassword(password), version, createdAt, updatedAt };
     await this.prisma.user.create({ data: user });
     return this.convertResponse(user);
   }
@@ -60,7 +61,7 @@ export class UserService {
     const { oldPassword, newPassword } = updateUserDto;
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException();
-    const isEqual = oldPassword === user.password;
+    const isEqual = await compare(oldPassword, user.password);
     if (!isEqual) throw new ForbiddenException();
     const data = {
       password: newPassword,
@@ -84,6 +85,10 @@ export class UserService {
     await this.prisma.user.delete({
       where: { id },
     });
+  }
+
+  private hashPassword(password: string) {
+    return hashSync(password, genSaltSync(10));
   }
 
   validateCreateUserDto(createUserDto: CreateUserDto): boolean {

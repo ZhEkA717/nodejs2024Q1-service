@@ -66,7 +66,7 @@ docker exec -it <CONTAINER_ID> npx prisma db seed
   Change docker-compose.yaml in the root
 
   ```yml
-  image: grushevskiyyevgeniy/node:v1.0
+  image: grushevskiyyevgeniy/postgres:v1.0
   ```
   or create new docker-compose.yml
   

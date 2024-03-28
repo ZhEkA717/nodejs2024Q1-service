@@ -7,10 +7,10 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { v4, validate } from 'uuid';
-import { UUIDException } from './exceptions/uuid.exception';
+import { v4 } from 'uuid';
 import { User as UserModel } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { compare, genSaltSync, hash } from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -34,7 +34,15 @@ export class UserService {
     const version = 1;
     const createdAt = Date.now();
     const updatedAt = createdAt;
-    const user = { id, login, password, version, createdAt, updatedAt };
+    const passwordHashed = await this.hashPassword(password);
+    const user = {
+      id,
+      login,
+      password: passwordHashed,
+      version,
+      createdAt,
+      updatedAt,
+    };
     await this.prisma.user.create({ data: user });
     return this.convertResponse(user);
   }
@@ -44,11 +52,8 @@ export class UserService {
     return users.map(this.convertResponse);
   }
 
-  async findOne(userId: string): Promise<Omit<User, 'password'>> {
-    if (!validate(userId)) throw new UUIDException();
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+  async findOne(id: string): Promise<Omit<User, 'password'>> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException();
     return this.convertResponse(user);
   }
@@ -57,13 +62,12 @@ export class UserService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<Omit<User, 'password'>> {
-    if (!validate(id)) throw new UUIDException();
     if (!this.validateUpdateUserDto(updateUserDto))
       throw new BadRequestException();
     const { oldPassword, newPassword } = updateUserDto;
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException();
-    const isEqual = oldPassword === user.password;
+    const isEqual = await compare(oldPassword, user.password);
     if (!isEqual) throw new ForbiddenException();
     const data = {
       password: newPassword,
@@ -80,7 +84,6 @@ export class UserService {
   }
 
   async remove(id: string): Promise<void> {
-    if (!validate(id)) throw new UUIDException();
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -88,6 +91,11 @@ export class UserService {
     await this.prisma.user.delete({
       where: { id },
     });
+  }
+
+  private hashPassword(password: string) {
+    const salt = +process.env.CRYPT_SALT || 10;
+    return hash(password, genSaltSync(salt));
   }
 
   validateCreateUserDto(createUserDto: CreateUserDto): boolean {

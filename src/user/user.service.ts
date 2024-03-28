@@ -10,7 +10,7 @@ import { User } from './entities/user.entity';
 import { v4 } from 'uuid';
 import { User as UserModel } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { compare, genSaltSync, hash, hashSync } from 'bcrypt';
+import { compare, genSaltSync, hash } from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -35,7 +35,14 @@ export class UserService {
     const createdAt = Date.now();
     const updatedAt = createdAt;
     const passwordHashed = await this.hashPassword(password);
-    const user = { id, login, password: passwordHashed, version, createdAt, updatedAt };
+    const user = {
+      id,
+      login,
+      password: passwordHashed,
+      version,
+      createdAt,
+      updatedAt,
+    };
     await this.prisma.user.create({ data: user });
     return this.convertResponse(user);
   }
@@ -45,10 +52,8 @@ export class UserService {
     return users.map(this.convertResponse);
   }
 
-  async findOne(userId: string): Promise<Omit<User, 'password'>> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+  async findOne(id: string): Promise<Omit<User, 'password'>> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException();
     return this.convertResponse(user);
   }

@@ -4,7 +4,6 @@ import {
   Injectable,
   ArgumentMetadata,
   BadRequestException,
-  ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { validate } from 'class-validator';

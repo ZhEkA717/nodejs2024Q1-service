@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -31,8 +30,6 @@ export class UserService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
-    if (!this.validateCreateUserDto(createUserDto))
-      throw new BadRequestException();
     const id = v4();
     const { login, password } = createUserDto;
     const version = 1;
@@ -66,8 +63,6 @@ export class UserService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<Omit<User, 'password'>> {
-    if (!this.validateUpdateUserDto(updateUserDto))
-      throw new BadRequestException();
     const { oldPassword, newPassword } = updateUserDto;
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException();
@@ -100,21 +95,5 @@ export class UserService {
   private hashPassword(password: string) {
     const salt: number = +this.configService.get('CRYPT_SALT', 10);
     return hash(password, genSaltSync(salt));
-  }
-
-  validateCreateUserDto(createUserDto: CreateUserDto): boolean {
-    const { login, password } = createUserDto;
-    const isPasswordString = typeof password === 'string';
-    const isloginString = typeof login === 'string';
-    return login && password && isPasswordString && isloginString;
-  }
-
-  validateUpdateUserDto(updateUserDto: UpdateUserDto): boolean {
-    const { oldPassword, newPassword } = updateUserDto;
-    const isOldPasswordString = typeof oldPassword === 'string';
-    const isNewPasswordString = typeof newPassword === 'string';
-    return (
-      oldPassword && newPassword && isOldPasswordString && isNewPasswordString
-    );
   }
 }

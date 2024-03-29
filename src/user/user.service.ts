@@ -11,10 +11,14 @@ import { v4 } from 'uuid';
 import { User as UserModel } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { compare, genSaltSync, hash } from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {}
 
   private convertResponse(user: UserModel | User): Omit<User, 'password'> {
     delete user.password;
@@ -94,7 +98,7 @@ export class UserService {
   }
 
   private hashPassword(password: string) {
-    const salt = +process.env.CRYPT_SALT || 10;
+    const salt: number = +this.configService.get('CRYPT_SALT', 10);
     return hash(password, genSaltSync(salt));
   }
 

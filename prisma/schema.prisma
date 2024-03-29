@@ -16,7 +16,7 @@ datasource db {
 
 model User {
   id       String @id @default(uuid()) 
-  login     String @unique()
+  login     String
   password  String
   version   Int    @default(1)
   createdAt BigInt
@@ -31,6 +31,7 @@ model Token {
   user User @relation(fields: [userId], references: [id])
   userId String
   login String
+  userAgent String @map("user_agent")
   @@map("tokens")
 }
 

@@ -3,20 +3,18 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RefreshTokenDto, SignUpDto } from './dto';
-import { ConfigService } from '@nestjs/config';
-import { UserAgent } from './decorators/user-agent.decorator';
+import { Public, UserAgent } from './decorators';
 
+@Public()
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
   async signup(@Body() dto: SignUpDto) {
@@ -25,6 +23,7 @@ export class AuthController {
       throw new BadRequestException(
         `Не получается зарегистрировать пользователя с ${JSON.stringify(dto)}`,
       );
+    return { id: user.id };
   }
 
   @Post('login')
@@ -38,6 +37,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @HttpCode(200)
   async refreshTokens(
     @Body() refreshTokenDto: RefreshTokenDto,
     @UserAgent() agent: string,
@@ -48,6 +48,7 @@ export class AuthController {
     return { ...tokens, refreshToken: tokens.refreshToken.token };
   }
 
+  @Public()
   @Get('token')
   getAllTokens() {
     return this.authService.getAllToken();

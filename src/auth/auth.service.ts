@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { LoginDto, SignUpDto } from './dto';
 import { UserService } from 'src/user/user.service';
 import { Tokens } from './interfaces/interfaces';
@@ -6,8 +10,6 @@ import { compare } from 'bcrypt';
 import { Token, User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { v4 } from 'uuid';
-import { add } from 'date-fns';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -20,16 +22,22 @@ export class AuthService {
   ) {}
 
   async refreshTokens(refreshToken: string, agent: string): Promise<Tokens> {
-    const token = await this.prisma.token.findUnique({
-      where: { token: refreshToken },
-    });
+    const token = await this.prisma.token
+      .findUnique({
+        where: { token: refreshToken },
+      })
+      .catch(() => {
+        throw new UnauthorizedException();
+      });
 
-    if (!token) throw new UnauthorizedException();
+    if (!token) throw new ForbiddenException();
 
     await this.prisma.token.delete({ where: { token: refreshToken } });
-
-    if (new Date(token.exp) < new Date()) throw new UnauthorizedException();
-
+    try {
+      await this.jwtService.verifyAsync(token.token);
+    } catch (err) {
+      throw new ForbiddenException();
+    }
     const user = await this.prisma.user.findUnique({
       where: { id: token.userId },
     });
@@ -45,40 +53,45 @@ export class AuthService {
     const user: User = await this.prisma.user.findFirst({
       where: { login: dto.login },
     });
-    if (!user) throw new UnauthorizedException('Не верный логин или пароль');
+    if (!user) throw new ForbiddenException('Не верный логин или пароль');
 
     const isEqual = await this.comparePasswords(dto.password, user.password);
 
-    if (!isEqual) throw new UnauthorizedException('Не верный логин или пароль');
+    if (!isEqual) throw new ForbiddenException('Не верный логин или пароль');
 
     return this.generateTokens(user, agent);
   }
 
   private async generateTokens(user: User, agent: string): Promise<Tokens> {
-    const accessToken =
-      'Bearer ' + this.jwtService.sign({ id: user.id, login: user.login });
+    const accessToken = this.jwtService.sign({
+      userId: user.id,
+      login: user.login,
+    });
     const refreshToken = await this.getRefreshToken(user, agent);
     return { accessToken, refreshToken };
   }
 
   async getRefreshToken(
     { id: userId, login }: User,
-    agent: string,
+    _agent: string,
   ): Promise<Token> {
+    const agent = _agent || 'no-name';
     const _token = await this.prisma.token.findFirst({
       where: { userId, userAgent: agent },
     });
     const token = _token?.token ?? '';
-    const exp: number = this.configService.get('TOKEN_REFRESH_EXPIRE_TIME', 24);
+    const expiresIn: string = this.configService.get(
+      'TOKEN_REFRESH_EXPIRE_TIME',
+      '24h',
+    );
+    const secret: string = this.configService.get('JWT_SECRET_REFRESH_KEY');
     return this.prisma.token.upsert({
       where: { token },
       update: {
-        token: v4(),
-        exp: add(new Date(), { hours: exp }),
+        token: this.jwtService.sign({ userId, login }, { expiresIn, secret }),
       },
       create: {
-        token: v4(),
-        exp: add(new Date(), { hours: exp }),
+        token: this.jwtService.sign({ userId, login }, { expiresIn, secret }),
         userId,
         login,
         userAgent: agent,

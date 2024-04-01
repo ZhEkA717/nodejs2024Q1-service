@@ -10,6 +10,15 @@ export enum env {
   TOKEN_REFRESH_EXPIRE_TIME = 'TOKEN_REFRESH_EXPIRE_TIME',
   TOKEN_REFRESH_EXPIRE_TIME_DEFAULT = '24h',
   AGENT_DEFAULT = 'NO_NAME',
+  MAX_SIZE_FILE = 'MAX_SIZE_FILE',
 }
 
 export const PUBLIC_KEY = 'public';
+
+export enum pathLogs {
+  PATH = 'Logs',
+  RESPONSE = 'Responce',
+  REQUEST = 'Request',
+}
+
+export type TypeLogs = 'responce.log.txt' | 'request.log.txt' | 'error.log.txt';

@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { LoggingService } from './Logger/logging.service';
 
-const logger = new LoggingService();
+const logger = new LoggingService(new ConfigService());
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

@@ -1,7 +1,7 @@
 import { ExecutionContext, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { PUBLIC_KEY } from 'src/utils/constants';
 
-export const PUBLIC_KEY = 'public';
 export const Public = () => SetMetadata(PUBLIC_KEY, true);
 
 export const isPublic = (ctx: ExecutionContext, reflector: Reflector) => {

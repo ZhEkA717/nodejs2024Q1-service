@@ -11,6 +11,8 @@ import { Token, User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { ErrorMessages } from 'src/Error';
+import { env } from 'src/utils/constants';
 
 @Injectable()
 export class AuthService {
@@ -30,13 +32,13 @@ export class AuthService {
         throw new UnauthorizedException();
       });
 
-    if (!token) throw new ForbiddenException();
+    if (!token) throw new ForbiddenException(ErrorMessages.TOKEN_NOT_FOUND);
 
     await this.prisma.token.delete({ where: { token: refreshToken } });
     try {
       await this.jwtService.verifyAsync(token.token);
     } catch (err) {
-      throw new ForbiddenException();
+      throw new ForbiddenException(ErrorMessages.TOKEN_NOT_FOUND);
     }
     const user = await this.prisma.user.findUnique({
       where: { id: token.userId },
@@ -53,11 +55,11 @@ export class AuthService {
     const user: User = await this.prisma.user.findFirst({
       where: { login: dto.login },
     });
-    if (!user) throw new ForbiddenException('Не верный логин или пароль');
+    if (!user) throw new ForbiddenException(ErrorMessages.WRONG_DATA);
 
     const isEqual = await this.comparePasswords(dto.password, user.password);
 
-    if (!isEqual) throw new ForbiddenException('Не верный логин или пароль');
+    if (!isEqual) throw new ForbiddenException(ErrorMessages.WRONG_DATA);
 
     return this.generateTokens(user, agent);
   }
@@ -75,16 +77,16 @@ export class AuthService {
     { id: userId, login }: User,
     _agent: string,
   ): Promise<Token> {
-    const agent = _agent || 'no-name';
+    const agent = _agent || env.AGENT_DEFAULT;
     const _token = await this.prisma.token.findFirst({
       where: { userId, userAgent: agent },
     });
     const token = _token?.token ?? '';
     const expiresIn: string = this.configService.get(
-      'TOKEN_REFRESH_EXPIRE_TIME',
-      '24h',
+      env.TOKEN_REFRESH_EXPIRE_TIME,
+      env.TOKEN_REFRESH_EXPIRE_TIME_DEFAULT,
     );
-    const secret: string = this.configService.get('JWT_SECRET_REFRESH_KEY');
+    const secret: string = this.configService.get(env.JWT_SECRET_REFRESH_KEY);
     return this.prisma.token.upsert({
       where: { token },
       update: {

@@ -1,10 +1,11 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtModuleAsyncOptions, JwtModuleOptions } from '@nestjs/jwt';
+import { env } from 'src/utils/constants';
 
 const jwtModuleOptions = (config: ConfigService): JwtModuleOptions => ({
-  secret: config.get('JWT_SECRET_KEY', 'very secret'),
+  secret: config.get(env.JWT_SECRET_KEY, ''),
   signOptions: {
-    expiresIn: config.get('TOKEN_EXPIRE_TIME', '1h'),
+    expiresIn: config.get(env.TOKEN_EXPIRE_TIME, env.TOKEN_EXPIRE_TIME_DEFAULT),
   },
 });
 

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -12,6 +12,8 @@ import { AuthModule } from './auth/auth.module';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { ValidationPipe } from './validators';
+import { LoggerMiddleware } from './auth/Middlewares/logger.middleware';
+import { LoggingModule } from './Logger/logging.module';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { ValidationPipe } from './validators';
     FavoritesModule,
     PrismaModule,
     AuthModule,
+    LoggingModule,
   ],
   controllers: [AppController],
   providers: [
@@ -39,5 +42,10 @@ import { ValidationPipe } from './validators';
       useClass: ValidationPipe,
     },
   ],
+  exports: [LoggingModule],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

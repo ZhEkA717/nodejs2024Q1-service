@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 @Injectable({ scope: Scope.TRANSIENT })
 export class LoggingService extends ConsoleLogger {
   writeError(message: string) {
+    this.setContext('Error');
     this.error(message);
   }
 
@@ -11,7 +12,9 @@ export class LoggingService extends ConsoleLogger {
     this.setContext('Request');
     const [, url, params] = req.baseUrl.split('/');
     const [query] = req.url.split('?');
-    const logs = `URL: /${url} - PARAMETERS: ${params} - QUERY: ${query} - METHOD: ${req.method}`;
+    const logs = `URL: /${url || ''} - PARAMETERS: ${params || ''} - QUERY: ${
+      query || ''
+    } - METHOD: ${req.method}`;
     this.log(logs);
   }
 

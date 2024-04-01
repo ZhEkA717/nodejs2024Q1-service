@@ -49,6 +49,7 @@ export class UserService {
   }
 
   async findAll(): Promise<Omit<User, 'password'>[]> {
+    throw new Error('asdas');
     const users = await this.prisma.user.findMany();
     return users.map(this.convertResponse);
   }

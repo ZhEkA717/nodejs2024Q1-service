@@ -9,11 +9,12 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { ValidationPipe } from './validators';
 import { LoggerMiddleware } from './auth/Middlewares/logger.middleware';
 import { LoggingModule } from './Logger/logging.module';
+import { HttpExceptionFilter } from './Error/http-exception.filer';
 
 @Module({
   imports: [
@@ -40,6 +41,10 @@ import { LoggingModule } from './Logger/logging.module';
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
     },
   ],
   exports: [LoggingModule],

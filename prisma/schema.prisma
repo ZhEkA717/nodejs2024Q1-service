@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  
 }
 
 datasource db {
@@ -14,39 +15,53 @@ datasource db {
 }
 
 model User {
-  id        String @id
+  id       String @id @default(uuid()) 
   login     String
   password  String
   version   Int    @default(1)
   createdAt BigInt
   updatedAt BigInt
+  token Token[]
+  @@map("users")
+}
+
+model Token {
+  token String @unique
+  user User @relation(fields: [userId], references: [id])
+  userId String
+  login String
+  userAgent String @map("user_agent")
+  @@map("tokens")
 }
 
 model Album {
-  id       String  @id
+  id       String  @id @default(uuid())
   name     String
   year     Int
   artist   Artist? @relation(fields: [artistId], references: [id])
   artistId String?
   tracks   Track[]
+  @@map("albums")
 }
 
 model Artist {
-  id     String  @id
+  id     String  @id @default(uuid())
   name   String
   grammy Boolean
   albums Album[]
   tracks Track[]
+  @@map("artists")
 }
 
 model Track {
-  id       String  @id
+  id       String  @id @default(uuid())
   name     String
   artist   Artist? @relation(fields: [artistId], references: [id])
   artistId String?
   album    Album?  @relation(fields: [albumId], references: [id])
   albumId  String?
   duration Int
+  @@map("tracks")
 }
 
 model Favorites {
@@ -54,4 +69,6 @@ model Favorites {
   artists String[] @default([])
   albums  String[] @default([])
   tracks  String[] @default([])
+  @@map("favorite")
 }
+

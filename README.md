@@ -1,4 +1,4 @@
-# Home Library Service
+# [ Part 2] Containerization, Docker and Database & ORM
 
 ## Prerequisites
 
@@ -7,66 +7,148 @@
 
 ## Downloading
 
-```
-git clone [{repository URL}](https://github.com/ZhEkA717/nodejs2024Q1-service.git)
+**HTTPS**
+
+```bash
+git clone https://github.com/ZhEkA717/nodejs2024Q1-service.git
 ```
 
-## Installing NPM modules
-
+```bash
+cd nodejs2024Q1-service
 ```
+
+```bash
+git checkout feat/add-docker
+```
+
+```bash
 npm install
 ```
 
-## Running application
-
-```
-npm start
+```bash
+cp .env.example .env
 ```
 
-After starting the app on port (4000 as default) you can open
-in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
-For more information about OpenAPI/Swagger please visit https://swagger.io/.
+```bash
+docker-compose up --build
+```
+**For the first time:** 
+  - in another terminal
+  - <CONTAINER_ID> of node app 
+```bash
+docker ps -a
+```
+```bash
+docker exec -it <CONTAINER_ID> npm run prisma:migrate
+```
+```bash
+docker exec -it <CONTAINER_ID> npx prisma db seed
+```
+## Use Docker Hub
 
+- **For node image**
+
+  ```bash
+  docker pull grushevskiyyevgeniy/node:v1.0
+  ```
+  Change docker-compose.yml in the root
+
+  ```yml
+  image: grushevskiyyevgeniy/node:v1.0
+  ```
+
+- **For postrges image**
+
+  ```bash
+  docker pull grushevskiyyevgeniy/postgres:v1.0
+  ```
+
+  Change docker-compose.yaml in the root
+
+  ```yml
+  image: grushevskiyyevgeniy/postgres:v1.0
+  ```
+  or create new docker-compose.yml
+  
+  ```yml
+  version: '3.0'
+
+  services:
+
+    node:
+      image: grushevskiyyevgeniy/node:v1.0 
+      ports:
+        - ${PORT}:${PORT}
+      depends_on:
+        - postgres
+      environment:
+        - PORT=${PORT}
+        - POSTGRES_DB_HOST=postgres
+      networks:
+        - homenet
+      restart: always
+  
+    postgres:
+      image: grushevskiyyevgeniy/postgres:v1.0
+      ports:
+        - ${POSTGRES_PORT}:${POSTGRES_PORT}
+      environment:
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        - POSTGRES_DB=${POSTGRES_DB}
+      networks:
+        homenet:
+          aliases:
+            - postgresdb
+      volumes:
+        - ./pg_data:/var/lib/postgresql/data
+      restart: always
+
+  networks:
+    homenet:
+      driver: 'bridge'
+
+  volumes:
+    postgres-data:
+  ```
+  
+  create new .env file
+  
+  ```env
+  PORT=4000
+  
+  POSTGRES_PORT=5432
+  POSTGRES_USER=postgres  
+  POSTGRES_PASSWORD=postgres
+  POSTGRES_DB=postgres
+  POSTGRES_DB_HOST=127.0.0.1
+
+  DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_USER}@${POSTGRES_DB_HOST}:5432/test?schema=public
+  ```
+```bash
+docker-compose up --build
+```
+### For the first time:
+  - in another terminal
+  - <CONTAINER_ID> of node app  
+```bash
+docker ps -a
+```
+```bash
+docker exec -it <CONTAINER_ID> npm run prisma:migrate
+```
+```bash
+docker exec -it <CONTAINER_ID> npx prisma db seed
+```
+## Run vulnerabilities scanning
+```bash
+npm run docker:scout:node
+npm run docker:scout:postgres
+```
 ## Testing
 
 After application running open new terminal and enter:
 
-To run all tests without authorization
-
-```
+```bash
 npm run test
 ```
-
-To run only one of all test suites
-
-```
-npm run test -- <path to suite>
-```
-
-To run all test with authorization
-
-```
-npm run test:auth
-```
-
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
-```
-
-### Auto-fix and format
-
-```
-npm run lint
-```
-
-```
-npm run format
-```
-
-### Debugging in VSCode
-
-Press <kbd>F5</kbd> to debug.
-
-For more information, visit: https://code.visualstudio.com/docs/editor/debugging

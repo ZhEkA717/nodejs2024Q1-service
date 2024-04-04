@@ -1,69 +1,74 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { Track } from './entities/track.entity';
-import { ArtistService } from 'src/artist/artist.service';
-import { AlbumService } from 'src/album/album.service';
 import { v4, validate } from 'uuid';
 import { UUIDException } from 'src/user/exceptions/uuid.exception';
-import { updateFavorite } from 'src/utils/updateFavorite';
-import { FavoritesService } from 'src/favorites/favorites.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TrackService {
-  static tracks: Track[] = [];
+  private db = this.prisma.track;
 
-  create(createTrackDto: CreateTrackDto): Track {
-    if (!this.validateDto(createTrackDto)) throw new BadRequestException();
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createTrackDto: CreateTrackDto): Promise<Track> {
+    if (!(await this.validateDto(createTrackDto)))
+      throw new BadRequestException();
     const id = v4();
-    const track = {id, ...createTrackDto};
-    TrackService.tracks.push(track);
-    return track;
+    const data = { id, ...createTrackDto };
+    await this.db.create({ data });
+    return data;
   }
 
-  findAll(): Track[] {
-    return TrackService.tracks;
+  async findAll(): Promise<Track[]> {
+    return this.db.findMany();
   }
 
-  findOne(id: string): Track {
+  async findOne(id: string): Promise<Track> {
     if (!validate(id)) throw new UUIDException();
-    const track = this.searchTrack(id);
+    const track = await this.db.findUnique({ where: { id } });
     if (!track) throw new NotFoundException();
     return track;
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto):Track {
+  async update(id: string, updateTrackDto: UpdateTrackDto): Promise<Track> {
     if (!validate(id)) throw new UUIDException();
-    const track = this.searchTrack(id);
+    const track = await this.db.findUnique({ where: { id } });
     if (!track) throw new NotFoundException();
-    if (!this.validateDto(updateTrackDto)) throw new BadRequestException();
-    const newTrack = {...track, ...updateTrackDto};
-    const index: number = TrackService.tracks.indexOf(track);
-    TrackService.tracks[index] = newTrack;
-    return newTrack;
+    if (!(await this.validateDto(updateTrackDto)))
+      throw new BadRequestException();
+    return await this.db.update({ where: { id }, data: updateTrackDto });
   }
 
-  remove(id: string): void {
+  async remove(id: string): Promise<void> {
     if (!validate(id)) throw new UUIDException();
-    const track = this.searchTrack(id);
+    const track = await this.db.findUnique({ where: { id } });
     if (!track) throw new NotFoundException();
-    const index: number = TrackService.tracks.indexOf(track);
-    TrackService.tracks.splice(index, 1);
-    updateFavorite(FavoritesService.favs.tracks, id);
+    await this.db.delete({ where: { id } });
   }
 
-  searchTrack(id: string): Track | undefined {
-    return TrackService.tracks.find(track => track.id === id);
-  }
-
-  validateDto(dto: CreateTrackDto | UpdateTrackDto) {
+  async validateDto(dto: CreateTrackDto | UpdateTrackDto): Promise<boolean> {
     const { name, duration, artistId, albumId } = dto;
-    const artistIsExist = artistId === null || ArtistService.artists.find(artist => artist.id === artistId);
-    const albumIsExist = albumId === null || AlbumService.albums.find(album => album.id === albumId);
-    return name && duration && !!albumIsExist && !!artistIsExist && typeof name === 'string' && typeof duration === 'number';
-  }
-
-  get getTracksId() {
-    return TrackService.tracks.map(item => item.id);
+    const artistIsExist =
+      artistId === null ||
+      (await this.prisma.artist.findUnique({
+        where: { id: String(artistId) },
+      }));
+    const albumIsExist =
+      albumId === null ||
+      (await this.prisma.album.findUnique({ where: { id: String(albumId) } }));
+    return (
+      name &&
+      duration &&
+      !!albumIsExist &&
+      !!artistIsExist &&
+      typeof name === 'string' &&
+      typeof duration === 'number'
+    );
   }
 }

@@ -1,81 +1,62 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { Artist } from './entities/artist.entity';
 import { v4, validate } from 'uuid';
 import { UUIDException } from 'src/user/exceptions/uuid.exception';
-import { AlbumService } from 'src/album/album.service';
-import { TrackService } from 'src/track/track.service';
-import { updateFavorite } from 'src/utils/updateFavorite';
-import { FavoritesService } from 'src/favorites/favorites.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ArtistService {
-  static artists: Artist[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  create(createArtistDto: CreateArtistDto): Artist {
+  async create(createArtistDto: CreateArtistDto): Promise<Artist> {
     const id = v4();
-    if (!this.validateArtistDto(createArtistDto)) throw new BadRequestException();
-    const artist = {id, ...createArtistDto };
-    ArtistService.artists.push(artist)
+    if (!this.validateArtistDto(createArtistDto))
+      throw new BadRequestException();
+    const artist = { id, ...createArtistDto };
+    await this.prisma.artist.create({ data: artist });
     return artist;
   }
 
-  findAll(): Artist[] {
-    return ArtistService.artists;
+  async findAll(): Promise<Artist[]> {
+    return this.prisma.artist.findMany();
   }
 
-  findOne(id: string): Artist {
+  async findOne(id: string): Promise<Artist> {
     if (!validate(id)) throw new UUIDException();
-    const artist = this.searchArtist(id);
+    const artist = await this.prisma.artist.findUnique({ where: { id } });
     if (!artist) throw new NotFoundException();
     return artist;
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto): Artist {
+  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> {
     if (!validate(id)) throw new UUIDException();
-    if (!this.validateArtistDto(updateArtistDto)) throw new BadRequestException();
-    const artist = this.searchArtist(id);
+    if (!this.validateArtistDto(updateArtistDto))
+      throw new BadRequestException();
+    const artist = await this.prisma.artist.findUnique({ where: { id } });
     if (!artist) throw new NotFoundException();
-    const newArtist = { ...artist, ...updateArtistDto };
-    const index: number = ArtistService.artists.indexOf(artist);
-    ArtistService.artists[index] = newArtist;
-    return newArtist;
+    return await this.prisma.artist.update({
+      where: { id },
+      data: updateArtistDto,
+    });
   }
 
-  remove(id: string): void {
+  async remove(id: string): Promise<void> {
     if (!validate(id)) throw new UUIDException();
-    const artist = this.searchArtist(id);
+    const artist = await this.prisma.artist.findUnique({ where: { id } });
     if (!artist) throw new NotFoundException();
-    const index: number = ArtistService.artists.indexOf(artist);
-    ArtistService.artists.splice(index, 1);
-    updateFavorite(FavoritesService.favs.artists, id);
-    this.updateAlbumsAfterDeleteArtist(id);
-    this.updateTracksAfterDeleteArtist(id);
-  }
-
-  updateAlbumsAfterDeleteArtist(id: string) {
-    AlbumService.albums.forEach(item => {
-      if (item.artistId === id) item.artistId = null;
-    })
-  }
-
-  updateTracksAfterDeleteArtist(id: string) {
-    TrackService.tracks.forEach(item => {
-      if (item.artistId === id) item.artistId = null;
-    })
-  }
-
-  searchArtist(id: string): Artist | undefined {
-    return ArtistService.artists.find(artist => artist.id === id);
+    await this.prisma.artist.delete({ where: { id } });
+    await this.prisma.track.deleteMany({ where: { artistId: id } });
+    await this.prisma.album.deleteMany({ where: { artistId: id } });
   }
 
   validateArtistDto(artistDto: CreateArtistDto | UpdateArtistDto): boolean {
     const { name, grammy } = artistDto;
     return name && typeof name === 'string' && typeof grammy === 'boolean';
-  }
-
-  get getArtistsId() {
-    return ArtistService.artists.map(item => item.id);
   }
 }

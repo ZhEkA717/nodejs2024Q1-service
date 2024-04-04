@@ -1,0 +1,5 @@
+node_modules
+pg_data
+dist
+doc
+docker
